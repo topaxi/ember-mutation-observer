@@ -1,6 +1,6 @@
 {
   "name": "ember-mutation-observer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ember Mutation Observer Mixin and Component",
   "directories": {
     "doc": "doc",
