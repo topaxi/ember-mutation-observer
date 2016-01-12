@@ -1,4 +1,4 @@
-# Ember-mutation-observer
+# Ember-mutation-observer [![Build Status](https://travis-ci.org/topaxi/ember-mutation-observer.svg?branch=master)](https://travis-ci.org/topaxi/ember-mutation-observer)
 
 This README outlines the details of collaborating on this Ember addon.
 
