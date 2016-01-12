@@ -6,8 +6,8 @@ module.exports = {
   included: function(app) {
     this._super.included(app)
 
-    app.import('bower_components/WeakMap/WeakMap.js')
-    app.import('bower_components/MutationObserver/MutationObserver.js')
+    app.import(app.bowerDirectory + '/WeakMap/WeakMap.js')
+    app.import(app.bowerDirectory + '/MutationObserver/MutationObserver.js')
     app.import('vendor/ember-mutation-observer/register-version.js')
   }
 }
