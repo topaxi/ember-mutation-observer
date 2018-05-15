@@ -1,11 +1,13 @@
-import Mixin    from 'ember-metal/mixin'
-import computed from 'ember-computed'
-import run      from 'ember-runloop'
-import on       from 'ember-evented/on'
+import Mixin from "@ember/object/mixin";
+import { computed } from "@ember/object";
+import { run } from "@ember/runloop";
+import { on } from "@ember/object/evented";
+import { assert } from "@ember/debug";
 
-const MutationObserver = window.MutationObserver ||
-                         window.WebKitMutationObserver ||
-                         window.MozMutationObserver
+const MutationObserver =
+  window.MutationObserver ||
+  window.WebKitMutationObserver ||
+  window.MozMutationObserver;
 
 /**
  * Ember mutation observer mixin for components
@@ -14,7 +16,6 @@ const MutationObserver = window.MutationObserver ||
  * @public
  */
 export default Mixin.create({
-
   /**
    * The mutation observer instance
    *
@@ -56,7 +57,7 @@ export default Mixin.create({
       // Set to an array of attribute local names (without namespace) if not
       // all attribute mutations need to be observed.
       attributeFilter: undefined
-    }
+    };
   }),
 
   /**
@@ -66,14 +67,18 @@ export default Mixin.create({
    * @return {void}
    * @public
    */
-  addMutationObserver: on('didInsertElement', function() {
-    this._mutationObserver = new MutationObserver(mutations => run(() =>
-      this.send('mutations', mutations)
-    ))
+  addMutationObserver: on("didInsertElement", function() {
+    try {
+      this._mutationObserver = new MutationObserver(mutations =>
+        run(() => this.send("mutations", mutations))
+      );
 
-    let config = this.get('mutationObserverConfig')
+      let config = this.get("mutationObserverConfig");
 
-    this._mutationObserver.observe(this.element, config)
+      this._mutationObserver.observe(this.element, config);
+    } catch (e) {
+      assert(e.message);
+    }
   }),
 
   /**
@@ -83,9 +88,9 @@ export default Mixin.create({
    * @return {void}
    * @public
    */
-  removeMutationObserver: on('willDestroyElement', function() {
+  removeMutationObserver: on("willDestroyElement", function() {
     if (this._mutationObserver) {
-      this._mutationObserver.disconnect()
+      this._mutationObserver.disconnect();
     }
   })
-})
+});

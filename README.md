@@ -1,4 +1,4 @@
-# Ember-mutation-observer [![Build Status](https://travis-ci.org/topaxi/ember-mutation-observer.svg?branch=master)](https://travis-ci.org/topaxi/ember-mutation-observer)
+# ember-mutation-observer [![Build Status](https://travis-ci.org/topaxi/ember-mutation-observer.svg?branch=master)](https://travis-ci.org/topaxi/ember-mutation-observer)
 
 This README outlines the details of collaborating on this Ember addon.
 
@@ -25,9 +25,9 @@ Which will pass the MutationEvents to your given function, once your list will b
 Or used as a Ember.Mixin for your own components:
 
 ```javascript
-import Component             from 'ember-component'
-import computed              from 'ember-computed'
-import MutationObserverMixin from 'ember-mutation-observer/mixins/mutation-observer'
+import Component from "@ember/component";
+import { computed } from "@ember/object";
+import MutationObserverMixin from "ember-mutation-observer/mixins/mutation-observer";
 
 /**
  * My Component
@@ -38,7 +38,6 @@ import MutationObserverMixin from 'ember-mutation-observer/mixins/mutation-obser
  * @public
  */
 export default Component.extend(MutationObserverMixin, {
-
   /**
    * Mutation observer config
    *
@@ -71,7 +70,7 @@ export default Component.extend(MutationObserverMixin, {
       // Set to an array of attribute local names (without namespace) if not
       // all attribute mutations need to be observed.
       attributeFilter: undefined
-    }
+    };
   }),
 
   /**
@@ -81,7 +80,6 @@ export default Component.extend(MutationObserverMixin, {
    * @public
    */
   actions: {
-
     /**
      * Triggered mutation actions
      *
@@ -94,14 +92,13 @@ export default Component.extend(MutationObserverMixin, {
       // Do something with mutation records
     }
   }
-})
+});
 ```
 
 ## Installation
 
 * `git clone` this repository
-* `npm install`
-* `bower install`
+* `yarn`
 
 ## Running
 
@@ -110,7 +107,7 @@ export default Component.extend(MutationObserverMixin, {
 
 ## Running Tests
 
-* `npm test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
+* `yarn test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
 * `ember test`
 * `ember test --server`
 
