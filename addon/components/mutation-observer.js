@@ -1,6 +1,6 @@
-import Component from "@ember/component";
-import MutationObserverMixin from "../mixins/mutation-observer";
-import { alias } from "@ember/object/computed";
+import Component from '@ember/component'
+import MutationObserverMixin from '../mixins/mutation-observer'
+import { alias } from '@ember/object/computed'
 
 /**
  * Ember mutation observer component
@@ -19,7 +19,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  childList: alias("mutationObserverConfig.childList"),
+  childList: alias('mutationObserverConfig.childList'),
 
   /**
    * Set to true if mutations to target's attributes are to be observed.
@@ -28,7 +28,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  attributes: alias("mutationObserverConfig.attributes"),
+  attributes: alias('mutationObserverConfig.attributes'),
 
   /**
    * Set to true if mutations to target's data are to be observed.
@@ -37,7 +37,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  characterData: alias("mutationObserverConfig.characterData"),
+  characterData: alias('mutationObserverConfig.characterData'),
 
   /**
    * Set to true if mutations to not just target, but also target's
@@ -47,7 +47,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  subtree: alias("mutationObserverConfig.subtree"),
+  subtree: alias('mutationObserverConfig.subtree'),
 
   /**
    * Set to true if attributes is set to true and target's attribute
@@ -57,7 +57,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  attributeOldValue: alias("mutationObserverConfig.attributeOldValue"),
+  attributeOldValue: alias('mutationObserverConfig.attributeOldValue'),
 
   /**
    * Set to true if characterData is set to true and target's data
@@ -67,7 +67,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default false
    * @public
    */
-  characterDataOldValue: alias("mutationObserverConfig.characterDataOldValue"),
+  characterDataOldValue: alias('mutationObserverConfig.characterDataOldValue'),
 
   /**
    * Set to an array of attribute local names (without namespace) if not
@@ -77,7 +77,7 @@ export default Component.extend(MutationObserverMixin, {
    * @default null
    * @public
    */
-  attributeFilter: alias("mutationObserverConfig.attributeFilter"),
+  attributeFilter: alias('mutationObserverConfig.attributeFilter'),
 
   /**
    * Actions of MutationObserverComponent
@@ -95,7 +95,7 @@ export default Component.extend(MutationObserverMixin, {
      * @public
      */
     mutations(mutations) {
-      this["on-mutations"](mutations);
+      this['on-mutations'](mutations)
     }
   }
-});
+})

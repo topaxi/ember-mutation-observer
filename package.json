@@ -2,9 +2,7 @@
   "name": "ember-mutation-observer",
   "version": "1.0.1",
   "description": "Ember Mutation Observer Mixin and Component",
-  "keywords": [
-    "ember-addon"
-  ],
+  "keywords": ["ember-addon"],
   "license": "MIT",
   "author": "Damian Senn <damian.senn@topaxi.codes>",
   "directories": {
@@ -17,7 +15,8 @@
   },
   "scripts": {
     "build": "ember build",
-    "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
+    "lint:js":
+      "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
     "start": "ember serve",
     "test": "ember test",
     "test:all": "ember try:each"

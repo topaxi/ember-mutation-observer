@@ -1,13 +1,13 @@
-import Mixin from "@ember/object/mixin";
-import { computed } from "@ember/object";
-import { run } from "@ember/runloop";
-import { on } from "@ember/object/evented";
-import { assert } from "@ember/debug";
+import Mixin from '@ember/object/mixin'
+import { computed } from '@ember/object'
+import { run } from '@ember/runloop'
+import { on } from '@ember/object/evented'
+import { assert } from '@ember/debug'
 
 const MutationObserver =
   window.MutationObserver ||
   window.WebKitMutationObserver ||
-  window.MozMutationObserver;
+  window.MozMutationObserver
 
 /**
  * Ember mutation observer mixin for components
@@ -57,7 +57,7 @@ export default Mixin.create({
       // Set to an array of attribute local names (without namespace) if not
       // all attribute mutations need to be observed.
       attributeFilter: undefined
-    };
+    }
   }),
 
   /**
@@ -67,17 +67,17 @@ export default Mixin.create({
    * @return {void}
    * @public
    */
-  addMutationObserver: on("didInsertElement", function() {
+  addMutationObserver: on('didInsertElement', function() {
     try {
       this._mutationObserver = new MutationObserver(mutations =>
-        run(() => this.send("mutations", mutations))
-      );
+        run(() => this.send('mutations', mutations))
+      )
 
-      let config = this.get("mutationObserverConfig");
+      let config = this.get('mutationObserverConfig')
 
-      this._mutationObserver.observe(this.element, config);
+      this._mutationObserver.observe(this.element, config)
     } catch (e) {
-      assert(e.message);
+      assert(e.message)
     }
   }),
 
@@ -88,9 +88,9 @@ export default Mixin.create({
    * @return {void}
    * @public
    */
-  removeMutationObserver: on("willDestroyElement", function() {
+  removeMutationObserver: on('willDestroyElement', function() {
     if (this._mutationObserver) {
-      this._mutationObserver.disconnect();
+      this._mutationObserver.disconnect()
     }
   })
-});
+})

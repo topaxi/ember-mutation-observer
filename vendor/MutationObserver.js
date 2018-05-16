@@ -4,98 +4,96 @@
  * license that can be found in the LICENSE file.
  */
 
-(function(global) {
-
-  var registrationsTable = new WeakMap();
+;(function(global) {
+  var registrationsTable = new WeakMap()
 
   // We use setImmediate or postMessage for our future callback.
-  var setImmediate = window.msSetImmediate;
+  var setImmediate = window.msSetImmediate
 
   // Use post message to emulate setImmediate.
   if (!setImmediate) {
-    var setImmediateQueue = [];
-    var sentinel = String(Math.random());
+    var setImmediateQueue = []
+    var sentinel = String(Math.random())
     window.addEventListener('message', function(e) {
       if (e.data === sentinel) {
-        var queue = setImmediateQueue;
-        setImmediateQueue = [];
+        var queue = setImmediateQueue
+        setImmediateQueue = []
         queue.forEach(function(func) {
-          func();
-        });
+          func()
+        })
       }
-    });
+    })
     setImmediate = function(func) {
-      setImmediateQueue.push(func);
-      window.postMessage(sentinel, '*');
-    };
+      setImmediateQueue.push(func)
+      window.postMessage(sentinel, '*')
+    }
   }
 
   // This is used to ensure that we never schedule 2 callas to setImmediate
-  var isScheduled = false;
+  var isScheduled = false
 
   // Keep track of observers that needs to be notified next time.
-  var scheduledObservers = [];
+  var scheduledObservers = []
 
   /**
    * Schedules |dispatchCallback| to be called in the future.
    * @param {MutationObserver} observer
    */
   function scheduleCallback(observer) {
-    scheduledObservers.push(observer);
+    scheduledObservers.push(observer)
     if (!isScheduled) {
-      isScheduled = true;
-      setImmediate(dispatchCallbacks);
+      isScheduled = true
+      setImmediate(dispatchCallbacks)
     }
   }
 
   function wrapIfNeeded(node) {
-    return window.ShadowDOMPolyfill &&
-        window.ShadowDOMPolyfill.wrapIfNeeded(node) ||
-        node;
+    return (
+      (window.ShadowDOMPolyfill &&
+        window.ShadowDOMPolyfill.wrapIfNeeded(node)) ||
+      node
+    )
   }
 
   function dispatchCallbacks() {
     // http://dom.spec.whatwg.org/#mutation-observers
 
-    isScheduled = false; // Used to allow a new setImmediate call above.
+    isScheduled = false // Used to allow a new setImmediate call above.
 
-    var observers = scheduledObservers;
-    scheduledObservers = [];
+    var observers = scheduledObservers
+    scheduledObservers = []
     // Sort observers based on their creation UID (incremental).
     observers.sort(function(o1, o2) {
-      return o1.uid_ - o2.uid_;
-    });
+      return o1.uid_ - o2.uid_
+    })
 
-    var anyNonEmpty = false;
+    var anyNonEmpty = false
     observers.forEach(function(observer) {
-
       // 2.1, 2.2
-      var queue = observer.takeRecords();
+      var queue = observer.takeRecords()
       // 2.3. Remove all transient registered observers whose observer is mo.
-      removeTransientObserversFor(observer);
+      removeTransientObserversFor(observer)
 
       // 2.4
       if (queue.length) {
-        observer.callback_(queue, observer);
-        anyNonEmpty = true;
+        observer.callback_(queue, observer)
+        anyNonEmpty = true
       }
-    });
+    })
 
     // 3.
-    if (anyNonEmpty)
-      dispatchCallbacks();
+    if (anyNonEmpty) dispatchCallbacks()
   }
 
   function removeTransientObserversFor(observer) {
     observer.nodes_.forEach(function(node) {
-      var registrations = registrationsTable.get(node);
-      if (!registrations)
-        return;
+      var registrations = registrationsTable.get(node)
+      if (!registrations) return
       registrations.forEach(function(registration) {
         if (registration.observer === observer)
-          registration.removeTransientObservers();
-      });
-    });
+          registration.removeTransientObservers()
+      })
+    })
   }
 
   /**
@@ -112,26 +110,24 @@
    */
   function forEachAncestorAndObserverEnqueueRecord(target, callback) {
     for (var node = target; node; node = node.parentNode) {
-      var registrations = registrationsTable.get(node);
+      var registrations = registrationsTable.get(node)
 
       if (registrations) {
         for (var j = 0; j < registrations.length; j++) {
-          var registration = registrations[j];
-          var options = registration.options;
+          var registration = registrations[j]
+          var options = registration.options
 
           // Only target ignores subtree.
-          if (node !== target && !options.subtree)
-            continue;
+          if (node !== target && !options.subtree) continue
 
-          var record = callback(options);
-          if (record)
-            registration.enqueue(record);
+          var record = callback(options)
+          if (record) registration.enqueue(record)
         }
       }
     }
   }
 
-  var uidCounter = 0;
+  var uidCounter = 0
 
   /**
    * The class that maps to the DOM MutationObserver interface.
@@ -139,47 +135,47 @@
    * @constructor
    */
   function JsMutationObserver(callback) {
-    this.callback_ = callback;
-    this.nodes_ = [];
-    this.records_ = [];
-    this.uid_ = ++uidCounter;
+    this.callback_ = callback
+    this.nodes_ = []
+    this.records_ = []
+    this.uid_ = ++uidCounter
   }
 
   JsMutationObserver.prototype = {
     observe: function(target, options) {
-      target = wrapIfNeeded(target);
+      target = wrapIfNeeded(target)
 
       // 1.1
-      if (!options.childList && !options.attributes && !options.characterData ||
-
-          // 1.2
-          options.attributeOldValue && !options.attributes ||
-
-          // 1.3
-          options.attributeFilter && options.attributeFilter.length &&
-              !options.attributes ||
-
-          // 1.4
-          options.characterDataOldValue && !options.characterData) {
-
-        throw new SyntaxError();
+      if (
+        (!options.childList &&
+          !options.attributes &&
+          !options.characterData) ||
+        // 1.2
+        (options.attributeOldValue && !options.attributes) ||
+        // 1.3
+        (options.attributeFilter &&
+          options.attributeFilter.length &&
+          !options.attributes) ||
+        // 1.4
+        (options.characterDataOldValue && !options.characterData)
+      ) {
+        throw new SyntaxError()
       }
 
-      var registrations = registrationsTable.get(target);
-      if (!registrations)
-        registrationsTable.set(target, registrations = []);
+      var registrations = registrationsTable.get(target)
+      if (!registrations) registrationsTable.set(target, (registrations = []))
 
       // 2
       // If target's list of registered observers already includes a registered
       // observer associated with the context object, replace that registered
       // observer's options with options.
-      var registration;
+      var registration
       for (var i = 0; i < registrations.length; i++) {
         if (registrations[i].observer === this) {
-          registration = registrations[i];
-          registration.removeListeners();
-          registration.options = options;
-          break;
+          registration = registrations[i]
+          registration.removeListeners()
+          registration.options = options
+          break
         }
       }
 
@@ -189,37 +185,37 @@
       // options, and add target to context object's list of nodes on which it
       // is registered.
       if (!registration) {
-        registration = new Registration(this, target, options);
-        registrations.push(registration);
-        this.nodes_.push(target);
+        registration = new Registration(this, target, options)
+        registrations.push(registration)
+        this.nodes_.push(target)
       }
 
-      registration.addListeners();
+      registration.addListeners()
     },
 
     disconnect: function() {
       this.nodes_.forEach(function(node) {
-        var registrations = registrationsTable.get(node);
+        var registrations = registrationsTable.get(node)
         for (var i = 0; i < registrations.length; i++) {
-          var registration = registrations[i];
+          var registration = registrations[i]
           if (registration.observer === this) {
-            registration.removeListeners();
-            registrations.splice(i, 1);
+            registration.removeListeners()
+            registrations.splice(i, 1)
             // Each node can only have one registered observer associated with
             // this observer.
-            break;
+            break
           }
         }
-      }, this);
-      this.records_ = [];
+      }, this)
+      this.records_ = []
     },
 
     takeRecords: function() {
-      var copyOfRecords = this.records_;
-      this.records_ = [];
-      return copyOfRecords;
+      var copyOfRecords = this.records_
+      this.records_ = []
+      return copyOfRecords
     }
-  };
+  }
 
   /**
    * @param {string} type
@@ -227,31 +223,31 @@
    * @constructor
    */
   function MutationRecord(type, target) {
-    this.type = type;
-    this.target = target;
-    this.addedNodes = [];
-    this.removedNodes = [];
-    this.previousSibling = null;
-    this.nextSibling = null;
-    this.attributeName = null;
-    this.attributeNamespace = null;
-    this.oldValue = null;
+    this.type = type
+    this.target = target
+    this.addedNodes = []
+    this.removedNodes = []
+    this.previousSibling = null
+    this.nextSibling = null
+    this.attributeName = null
+    this.attributeNamespace = null
+    this.oldValue = null
   }
 
   function copyMutationRecord(original) {
-    var record = new MutationRecord(original.type, original.target);
-    record.addedNodes = original.addedNodes.slice();
-    record.removedNodes = original.removedNodes.slice();
-    record.previousSibling = original.previousSibling;
-    record.nextSibling = original.nextSibling;
-    record.attributeName = original.attributeName;
-    record.attributeNamespace = original.attributeNamespace;
-    record.oldValue = original.oldValue;
-    return record;
-  };
+    var record = new MutationRecord(original.type, original.target)
+    record.addedNodes = original.addedNodes.slice()
+    record.removedNodes = original.removedNodes.slice()
+    record.previousSibling = original.previousSibling
+    record.nextSibling = original.nextSibling
+    record.attributeName = original.attributeName
+    record.attributeNamespace = original.attributeNamespace
+    record.oldValue = original.oldValue
+    return record
+  }
 
   // We keep track of the two (possibly one) records used in a single mutation.
-  var currentRecord, recordWithOldValue;
+  var currentRecord, recordWithOldValue
 
   /**
    * Creates a record without |oldValue| and caches it as |currentRecord| for
@@ -260,7 +256,7 @@
    * @return {MutationRecord}
    */
   function getRecord(type, target) {
-    return currentRecord = new MutationRecord(type, target);
+    return (currentRecord = new MutationRecord(type, target))
   }
 
   /**
@@ -269,15 +265,14 @@
    * @return {MutationRecord}
    */
   function getRecordWithOldValue(oldValue) {
-    if (recordWithOldValue)
-      return recordWithOldValue;
-    recordWithOldValue = copyMutationRecord(currentRecord);
-    recordWithOldValue.oldValue = oldValue;
-    return recordWithOldValue;
+    if (recordWithOldValue) return recordWithOldValue
+    recordWithOldValue = copyMutationRecord(currentRecord)
+    recordWithOldValue.oldValue = oldValue
+    return recordWithOldValue
   }
 
   function clearRecords() {
-    currentRecord = recordWithOldValue = undefined;
+    currentRecord = recordWithOldValue = undefined
   }
 
   /**
@@ -286,7 +281,7 @@
    * mutation event.
    */
   function recordRepresentsCurrentMutation(record) {
-    return record === recordWithOldValue || record === currentRecord;
+    return record === recordWithOldValue || record === currentRecord
   }
 
   /**
@@ -298,15 +293,14 @@
    * @param {MutationRecord}
    */
   function selectRecord(lastRecord, newRecord) {
-    if (lastRecord === newRecord)
-      return lastRecord;
+    if (lastRecord === newRecord) return lastRecord
 
     // Check if the the record we are adding represents the same record. If
     // so, we keep the one with the oldValue in it.
     if (recordWithOldValue && recordRepresentsCurrentMutation(lastRecord))
-      return recordWithOldValue;
+      return recordWithOldValue
 
-    return null;
+    return null
   }
 
   /**
@@ -317,71 +311,71 @@
    * @constructor
    */
   function Registration(observer, target, options) {
-    this.observer = observer;
-    this.target = target;
-    this.options = options;
-    this.transientObservedNodes = [];
+    this.observer = observer
+    this.target = target
+    this.options = options
+    this.transientObservedNodes = []
   }
 
   Registration.prototype = {
     enqueue: function(record) {
-      var records = this.observer.records_;
-      var length = records.length;
+      var records = this.observer.records_
+      var length = records.length
 
       // There are cases where we replace the last record with the new record.
       // For example if the record represents the same mutation we need to use
       // the one with the oldValue. If we get same record (this can happen as we
       // walk up the tree) we ignore the new record.
       if (records.length > 0) {
-        var lastRecord = records[length - 1];
-        var recordToReplaceLast = selectRecord(lastRecord, record);
+        var lastRecord = records[length - 1]
+        var recordToReplaceLast = selectRecord(lastRecord, record)
         if (recordToReplaceLast) {
-          records[length - 1] = recordToReplaceLast;
-          return;
+          records[length - 1] = recordToReplaceLast
+          return
         }
       } else {
-        scheduleCallback(this.observer);
+        scheduleCallback(this.observer)
       }
 
-      records[length] = record;
+      records[length] = record
     },
 
     addListeners: function() {
-      this.addListeners_(this.target);
+      this.addListeners_(this.target)
     },
 
     addListeners_: function(node) {
-      var options = this.options;
+      var options = this.options
       if (options.attributes)
-        node.addEventListener('DOMAttrModified', this, true);
+        node.addEventListener('DOMAttrModified', this, true)
 
       if (options.characterData)
-        node.addEventListener('DOMCharacterDataModified', this, true);
+        node.addEventListener('DOMCharacterDataModified', this, true)
 
       if (options.childList)
-        node.addEventListener('DOMNodeInserted', this, true);
+        node.addEventListener('DOMNodeInserted', this, true)
 
       if (options.childList || options.subtree)
-        node.addEventListener('DOMNodeRemoved', this, true);
+        node.addEventListener('DOMNodeRemoved', this, true)
     },
 
     removeListeners: function() {
-      this.removeListeners_(this.target);
+      this.removeListeners_(this.target)
     },
 
     removeListeners_: function(node) {
-      var options = this.options;
+      var options = this.options
       if (options.attributes)
-        node.removeEventListener('DOMAttrModified', this, true);
+        node.removeEventListener('DOMAttrModified', this, true)
 
       if (options.characterData)
-        node.removeEventListener('DOMCharacterDataModified', this, true);
+        node.removeEventListener('DOMCharacterDataModified', this, true)
 
       if (options.childList)
-        node.removeEventListener('DOMNodeInserted', this, true);
+        node.removeEventListener('DOMNodeInserted', this, true)
 
       if (options.childList || options.subtree)
-        node.removeEventListener('DOMNodeRemoved', this, true);
+        node.removeEventListener('DOMNodeRemoved', this, true)
     },
 
     /**
@@ -392,155 +386,147 @@
     addTransientObserver: function(node) {
       // Don't add transient observers on the target itself. We already have all
       // the required listeners set up on the target.
-      if (node === this.target)
-        return;
+      if (node === this.target) return
 
-      this.addListeners_(node);
-      this.transientObservedNodes.push(node);
-      var registrations = registrationsTable.get(node);
-      if (!registrations)
-        registrationsTable.set(node, registrations = []);
+      this.addListeners_(node)
+      this.transientObservedNodes.push(node)
+      var registrations = registrationsTable.get(node)
+      if (!registrations) registrationsTable.set(node, (registrations = []))
 
       // We know that registrations does not contain this because we already
       // checked if node === this.target.
-      registrations.push(this);
+      registrations.push(this)
     },
 
     removeTransientObservers: function() {
-      var transientObservedNodes = this.transientObservedNodes;
-      this.transientObservedNodes = [];
+      var transientObservedNodes = this.transientObservedNodes
+      this.transientObservedNodes = []
 
       transientObservedNodes.forEach(function(node) {
         // Transient observers are never added to the target.
-        this.removeListeners_(node);
+        this.removeListeners_(node)
 
-        var registrations = registrationsTable.get(node);
+        var registrations = registrationsTable.get(node)
         for (var i = 0; i < registrations.length; i++) {
           if (registrations[i] === this) {
-            registrations.splice(i, 1);
+            registrations.splice(i, 1)
             // Each node can only have one registered observer associated with
             // this observer.
-            break;
+            break
           }
         }
-      }, this);
+      }, this)
     },
 
     handleEvent: function(e) {
       // Stop propagation since we are managing the propagation manually.
       // This means that other mutation events on the page will not work
       // correctly but that is by design.
-      e.stopImmediatePropagation();
+      e.stopImmediatePropagation()
 
       switch (e.type) {
         case 'DOMAttrModified':
           // http://dom.spec.whatwg.org/#concept-mo-queue-attributes
 
-          var name = e.attrName;
-          var namespace = e.relatedNode.namespaceURI;
-          var target = e.target;
+          var name = e.attrName
+          var namespace = e.relatedNode.namespaceURI
+          var target = e.target
 
           // 1.
-          var record = new getRecord('attributes', target);
-          record.attributeName = name;
-          record.attributeNamespace = namespace;
+          var record = new getRecord('attributes', target)
+          record.attributeName = name
+          record.attributeNamespace = namespace
 
           // 2.
           var oldValue =
-              e.attrChange === MutationEvent.ADDITION ? null : e.prevValue;
+            e.attrChange === MutationEvent.ADDITION ? null : e.prevValue
 
           forEachAncestorAndObserverEnqueueRecord(target, function(options) {
             // 3.1, 4.2
-            if (!options.attributes)
-              return;
+            if (!options.attributes) return
 
             // 3.2, 4.3
-            if (options.attributeFilter && options.attributeFilter.length &&
-                options.attributeFilter.indexOf(name) === -1 &&
-                options.attributeFilter.indexOf(namespace) === -1) {
-              return;
+            if (
+              options.attributeFilter &&
+              options.attributeFilter.length &&
+              options.attributeFilter.indexOf(name) === -1 &&
+              options.attributeFilter.indexOf(namespace) === -1
+            ) {
+              return
             }
             // 3.3, 4.4
             if (options.attributeOldValue)
-              return getRecordWithOldValue(oldValue);
+              return getRecordWithOldValue(oldValue)
 
             // 3.4, 4.5
-            return record;
-          });
+            return record
+          })
 
-          break;
+          break
 
         case 'DOMCharacterDataModified':
           // http://dom.spec.whatwg.org/#concept-mo-queue-characterdata
-          var target = e.target;
+          var target = e.target
 
           // 1.
-          var record = getRecord('characterData', target);
+          var record = getRecord('characterData', target)
 
           // 2.
-          var oldValue = e.prevValue;
-
+          var oldValue = e.prevValue
 
           forEachAncestorAndObserverEnqueueRecord(target, function(options) {
             // 3.1, 4.2
-            if (!options.characterData)
-              return;
+            if (!options.characterData) return
 
             // 3.2, 4.3
             if (options.characterDataOldValue)
-              return getRecordWithOldValue(oldValue);
+              return getRecordWithOldValue(oldValue)
 
             // 3.3, 4.4
-            return record;
-          });
+            return record
+          })
 
-          break;
+          break
 
         case 'DOMNodeRemoved':
-          this.addTransientObserver(e.target);
-          // Fall through.
+          this.addTransientObserver(e.target)
+        // Fall through.
         case 'DOMNodeInserted':
           // http://dom.spec.whatwg.org/#concept-mo-queue-childlist
-          var target = e.relatedNode;
-          var changedNode = e.target;
-          var addedNodes, removedNodes;
+          var target = e.relatedNode
+          var changedNode = e.target
+          var addedNodes, removedNodes
           if (e.type === 'DOMNodeInserted') {
-            addedNodes = [changedNode];
-            removedNodes = [];
+            addedNodes = [changedNode]
+            removedNodes = []
           } else {
-
-            addedNodes = [];
-            removedNodes = [changedNode];
+            addedNodes = []
+            removedNodes = [changedNode]
           }
-          var previousSibling = changedNode.previousSibling;
-          var nextSibling = changedNode.nextSibling;
+          var previousSibling = changedNode.previousSibling
+          var nextSibling = changedNode.nextSibling
 
           // 1.
-          var record = getRecord('childList', target);
-          record.addedNodes = addedNodes;
-          record.removedNodes = removedNodes;
-          record.previousSibling = previousSibling;
-          record.nextSibling = nextSibling;
+          var record = getRecord('childList', target)
+          record.addedNodes = addedNodes
+          record.removedNodes = removedNodes
+          record.previousSibling = previousSibling
+          record.nextSibling = nextSibling
 
           forEachAncestorAndObserverEnqueueRecord(target, function(options) {
             // 2.1, 3.2
-            if (!options.childList)
-              return;
+            if (!options.childList) return
 
             // 2.2, 3.3
-            return record;
-          });
-
+            return record
+          })
       }
 
-      clearRecords();
+      clearRecords()
     }
-  };
+  }
 
-  global.JsMutationObserver = JsMutationObserver;
+  global.JsMutationObserver = JsMutationObserver
 
-  if (!global.MutationObserver)
-    global.MutationObserver = JsMutationObserver;
-
-
-})(this);
+  if (!global.MutationObserver) global.MutationObserver = JsMutationObserver
+})(this)
